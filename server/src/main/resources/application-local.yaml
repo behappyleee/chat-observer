@@ -3,3 +3,6 @@ spring:
     name: server
 server:
   port: 8083
+logging:
+  level:
+    root: debug

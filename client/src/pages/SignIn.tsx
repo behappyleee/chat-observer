@@ -11,7 +11,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
-const SignIn = () => {
+const Signin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -88,4 +88,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn; 
+export default Signin; 

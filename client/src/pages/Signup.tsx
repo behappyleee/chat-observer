@@ -10,18 +10,35 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
+import axios from 'axios';
 
-const SignUp = () => {
+const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement signup logic
-    navigate('/signin');
+    if (password !== confirmPassword) {
+      alert('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+    try {
+      const response = await axios.post('http://localhost:8083/api/v1/users/signup', {
+        name,
+        email,
+        password
+      });
+      if (response.status === 200) {
+        alert('회원가입이 완료되었습니다.');
+        navigate('/signin');
+      }
+    } catch (error) {
+      alert('회원가입 중 오류가 발생했습니다.');
+      console.error(error);
+    }
   };
 
   return (
@@ -112,4 +129,4 @@ const SignUp = () => {
   );
 };
 
-export default SignUp; 
+export default Signup; 

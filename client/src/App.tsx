@@ -1,8 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material';
-import SignIn from './pages/SignIn';
-import SignUp from './pages/SignUp';
+import Signin from './pages/Signin';
+import Signup from './pages/Signup';
 import ChatList from './pages/ChatList';
 import './App.css';
 
@@ -22,8 +22,8 @@ function App() {
     <ThemeProvider theme={theme}>
       <Router>
         <Routes>
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
+          <Route path="/signin" element={<Signin />} />
+          <Route path="/signup" element={<Signup />} />
           <Route path="/chat-list" element={<ChatList />} />
           <Route path="/" element={<Navigate to="/signin" replace />} />
         </Routes>
