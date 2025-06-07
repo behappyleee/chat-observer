@@ -22,6 +22,10 @@ const Signin = () => {
     navigate('/chat-list');
   };
 
+  const signupNavigate = () => {
+    navigate('/signup');
+  };
+
   return (
     <Container component="main" maxWidth="xs">
       <Box
@@ -80,6 +84,14 @@ const Signin = () => {
               sx={{ mt: 3, mb: 2 }}
             >
               로그인
+            </Button>
+            <Button
+              onClick={signupNavigate}
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            >
+              회원가입
             </Button>
           </Box>
         </Paper>
