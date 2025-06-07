@@ -87,15 +87,16 @@ const ChatRoom = () => {
         try {
           let url = `/chats/rooms/${roomId}`;
           
-          // 탭에 따라 다른 userType으로 필터링
+          // 탭에 따라 다른 userType과 channelType으로 필터링
           if (isObserverRoom) {
             // Observer 상담 탭일 때는 AGENT와 OBSERVER의 메시지만
-            url += '?userType=AGENT&userType=OBSERVER';
+            url += '?userType=AGENT&userType=OBSERVER&channelType=OBSERVER';
           } else {
             // 고객 상담 탭일 때는 CUSTOMER와 AGENT의 메시지만
-            url += '?userType=CUSTOMER&userType=AGENT';
+            url += '?userType=CUSTOMER&userType=AGENT&channelType=CUSTOMER';
           }
 
+          console.log('Fetching messages with URL:', url);
           const response = await axios.get(url);
           const messages = response.data.map((msg: any) => ({
             id: msg.id,

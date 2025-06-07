@@ -22,33 +22,24 @@ class ChatRestController(
         return chatService.getChatRooms().map { it.toChatRoomResponse(userType = userType) }
     }
 
-    // TODO - Channel Type 데이터 추가해주기 !!
     @GetMapping("/chats/{id}")
     fun getChatRoomById(
         @PathVariable("id") chatId: String,
         @RequestParam(value = "userType", required = true) userType: String,
-        @RequestParam(value = "userName", required = true) userName: String
+        @RequestParam(value = "userName", required = true) userName: String,
     ): ChatRoomResponse {
-        // TODO - Channel Type 입력하기 !
         return chatService.findChatRoomByIdOrThrow(chatRoomId = chatId).toChatRoomResponse(userType = userType)
     }
 
     @GetMapping("/chats/rooms/{id}")
     fun getChatRoomMessagesById(
         @PathVariable("id") chatId: String,
-        @RequestParam(value = "userType", required = true) userType: Set<String>
+        @RequestParam(value = "userType", required = true) userType: Set<String>,
+        @RequestParam(value = "channelType", required = true) channelType: String,
     ): List<ChatMessageResponse> {
-        return chatService.findChatRoomMessagesBy(chatRoomId = chatId, userTypes = userType).toChatMessageResponse()
+        return chatService.findChatRoomMessagesBy(chatRoomId = chatId, userTypes = userType, channelType = channelType).toChatMessageResponse()
     }
 
-//    @GetMapping("/chats/rooms/{id}")
-//    fun getChatRoomMessages(
-//        @PathVariable("id") chatRoomId: String
-//    ): List<ChatMessageResponse> {
-//        return chatService.findChatRoomMessageByRoomId(roomId = chatRoomId).toChatMessageResponse()
-//    }
-
-    // 저장 된 메세지 들을 조회 !
     companion object {
         private val logger = LoggerFactory.getLogger(ChatRestController::class.java)
     }

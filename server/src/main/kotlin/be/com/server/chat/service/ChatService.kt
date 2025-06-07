@@ -30,8 +30,12 @@ class ChatService(
         }
     }
 
-    fun findChatRoomMessagesBy(chatRoomId: String, userTypes: Set<String>): List<ChatMessage> {
-        return chatMessageRepository.findByChatRoomIdAndSenderTypeIn(chatRoomId, userTypes)
+    fun findChatRoomMessagesBy(chatRoomId: String, userTypes: Set<String>, channelType: String): List<ChatMessage> {
+        return chatMessageRepository.findByChatRoomIdAndSenderTypeInAndChannelType(
+            chatRoomId = chatRoomId,
+            senderTypes = userTypes,
+            channelType = channelType
+        )
     }
 
     fun saveChatMessage(chatMessageDto: ChatMessageDto): ChatMessage {
