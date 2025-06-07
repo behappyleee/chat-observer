@@ -15,6 +15,7 @@ import {
   Tab,
   Tabs,
   InputAdornment,
+  Button,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
@@ -117,8 +118,40 @@ const ChatRoom = () => {
       };
 
       fetchMessages();
+
+      // OBSERVER인 경우 고객 상담 종료 토픽 구독
+      if (currentUserType === 'OBSERVER') {
+        const exitTopic = `/topic/chat/${roomId}/customer/exit`;
+        console.log('Subscribing to exit topic:', exitTopic);
+        subscribe(exitTopic, async (message) => {
+          try {
+            console.log('Received exit message:', message);
+            
+            if (message.roomId === roomId) {
+              const shouldDelete = window.confirm(
+                '고객이 상담을 종료했습니다. 옵저버 와 나눈 대화 내용을 폐기 하시겠습니까?'
+              );
+              
+              if (shouldDelete) {
+                try {
+                  await axios.delete(`/chats/rooms/${roomId}`);
+                  console.log('대화 내용 폐기 완료');
+                  setMessages([]); // 메시지 목록 초기화
+                } catch (error) {
+                  console.error('대화 내용 폐기 실패:', error);
+                  alert('대화 내용 폐기에 실패했습니다.');
+                }
+              } else {
+                console.log('대화 내용 보존');
+              }
+            }
+          } catch (error) {
+            console.error('Error processing exit message:', error);
+          }
+        });
+      }
     }
-  }, [roomId, isObserverRoom]);
+  }, [roomId, isObserverRoom, currentUserType]);
 
   useEffect(() => {
     if (isConnected && roomId) {
@@ -454,6 +487,26 @@ const ChatRoom = () => {
     }
   };
 
+  const handleEndConsultation = () => {
+    if (!roomId || !isConnected) return;
+
+    const exitMessage = {
+      roomId: roomId,
+      userName: userName,
+      userType: currentUserType,
+      message: "상담이 종료되었습니다.",
+      createdAt: new Date().toISOString(),
+      channelType: 'CUSTOMER'
+    };
+
+    console.log('Sending exit message:');
+    const topic = `/chats/${roomId}/customer/exit`;
+    console.log('Sending to topic:', topic);
+    
+    sendMessage(topic, exitMessage);
+    alert('상담이 종료되었습니다.');
+  };
+
   return (
     <Container maxWidth="md" sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {(currentUserType === 'AGENT' || currentUserType === 'OBSERVER') && (
@@ -495,24 +548,53 @@ const ChatRoom = () => {
       </Paper>
 
       {canSendMessage() && (
-        <Box sx={{ p: 2, backgroundColor: 'background.paper' }}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder={isObserverRoom ? "Observer에게 메시지를 입력하세요..." : "메시지를 입력하세요..."}
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={handleSendMessage} color="primary">
-                    <SendIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
+        <Box sx={{ 
+          p: 2, 
+          backgroundColor: 'background.paper',
+          display: 'flex',
+          justifyContent: 'center'
+        }}>
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 2, 
+            alignItems: 'center',
+            maxWidth: '1000px',
+            width: '100%'
+          }}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder={isObserverRoom ? "Observer에게 메시지를 입력하세요..." : "메시지를 입력하세요..."}
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={handleSendMessage} color="primary">
+                      <SendIcon />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            {currentUserType === 'CUSTOMER' && (
+              <Button
+                variant="contained"
+                color="error"
+                size="large"
+                onClick={handleEndConsultation}
+                sx={{ 
+                  height: '56px',
+                  minWidth: '120px',
+                  fontSize: '1.1rem',
+                  fontWeight: 'bold'
+                }}
+              >
+                상담종료
+              </Button>
+            )}
+          </Box>
         </Box>
       )}
     </Container>

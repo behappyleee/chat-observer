@@ -9,4 +9,6 @@ interface ChatMessageRepository : JpaRepository<ChatMessage, String> {
     fun findByChatRoomId(chatRoomId: String): List<ChatMessage>
 
     fun findByChatRoomIdAndSenderTypeInAndChannelType(chatRoomId: String, senderTypes: Set<String>, channelType: String): List<ChatMessage>
+
+    fun deleteByChatRoomIdAndChannelType(chatRoomId: String, channelType: String)
 }

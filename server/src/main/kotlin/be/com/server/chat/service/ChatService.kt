@@ -8,6 +8,7 @@ import be.com.server.chat.service.dto.ChatMessageDto
 import be.com.server.chat.service.dto.ChatRoomCreateDto
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class ChatService(
@@ -50,8 +51,12 @@ class ChatService(
         )
     }
 
-    fun findChatRoomMessageByRoomId(roomId: String): List<ChatMessage> {
-        return chatMessageRepository.findByChatRoomId(chatRoomId = roomId)
+    @Transactional
+    fun deleteChatRoomMessageBy(roomId: String, channelType: String) {
+        chatMessageRepository.deleteByChatRoomIdAndChannelType(
+            chatRoomId = roomId,
+            channelType = channelType
+        )
     }
 
     companion object {

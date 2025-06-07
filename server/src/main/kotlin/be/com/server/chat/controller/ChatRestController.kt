@@ -6,6 +6,7 @@ import be.com.server.chat.controller.response.toChatMessageResponse
 import be.com.server.chat.controller.response.toChatRoomResponse
 import be.com.server.chat.service.ChatService
 import org.slf4j.LoggerFactory
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
@@ -38,6 +39,17 @@ class ChatRestController(
         @RequestParam(value = "channelType", required = true) channelType: String,
     ): List<ChatMessageResponse> {
         return chatService.findChatRoomMessagesBy(chatRoomId = chatId, userTypes = userType, channelType = channelType).toChatMessageResponse()
+    }
+
+    @DeleteMapping("/chats/rooms/{roomId}")
+    fun deleteChatRoomObserverMessagesById(
+        @PathVariable("roomId") roomId: String,
+        @RequestParam(value = "channelType", required = true) channelType: String = "OBSERVER",
+    ) {
+        chatService.deleteChatRoomMessageBy(
+            roomId = roomId,
+            channelType = channelType,
+        )
     }
 
     companion object {

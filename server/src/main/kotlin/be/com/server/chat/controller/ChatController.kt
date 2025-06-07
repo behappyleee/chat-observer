@@ -4,6 +4,7 @@ import be.com.server.chat.controller.request.ChatMessageSendRequest
 import be.com.server.chat.controller.request.ChatRoomCreateRequest
 import be.com.server.chat.controller.response.ChatResponse
 import be.com.server.chat.controller.response.ChatRoomResponse
+import be.com.server.chat.controller.response.CustomerChatExitResponse
 import be.com.server.chat.controller.response.toChatRoomResponse
 import be.com.server.chat.event.ChatMessageEvent
 import be.com.server.chat.service.ChatService
@@ -79,6 +80,14 @@ class ChatController(
             senderType = message.userType,
             message = message.message
         )
+    }
+
+    @MessageMapping("/chats/{roomId}/customer/exit")
+    @SendTo("/topic/chat/{roomId}/customer/exit")
+    fun exitCustomer(
+        @DestinationVariable("roomId") roomId: String,
+    ): CustomerChatExitResponse {
+        return CustomerChatExitResponse(roomId = roomId)
     }
 
     companion object {
