@@ -2,8 +2,6 @@ package be.com.server.chat.domain
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Lob
 import jakarta.persistence.Table
@@ -14,11 +12,7 @@ import java.util.UUID
 @Table(name = "chat_message")
 class ChatMessage(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
-
-    @Column(nullable = false, unique = true, columnDefinition = "char(36)")
-    val uuid: String = UUID.randomUUID().toString(),
+    val id: String = UUID.randomUUID().toString(),
 
     @Column(name = "chat_room_id", nullable = false)
     val chatRoomId: String,
@@ -29,6 +23,9 @@ class ChatMessage(
     // TODO - Enum 으로 변경 하기 !
     @Column(name = "sender_type", nullable = false)
     val senderType: String,
+
+    @Column(name = "channel_type", nullable = false)
+    val channelType: String,
 
     @Lob
     @Column(nullable = false)

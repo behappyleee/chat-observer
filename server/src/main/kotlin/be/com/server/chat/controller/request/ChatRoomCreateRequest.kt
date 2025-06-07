@@ -10,7 +10,6 @@ data class ChatRoomCreateRequest(
 
 fun ChatRoomCreateRequest.toChatMessageDto() =
     ChatRoomCreateDto(
-        roomId = "",
         userType = this.userType,
         userName = this.userName,
         message = this.initialMessage

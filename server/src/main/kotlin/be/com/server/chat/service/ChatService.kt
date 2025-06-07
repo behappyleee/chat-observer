@@ -1,46 +1,53 @@
 package be.com.server.chat.service
 
 import be.com.server.chat.domain.ChatMessage
-import be.com.server.chat.repository.ChatRepository
+import be.com.server.chat.domain.ChatRoom
+import be.com.server.chat.repository.ChatMessageRepository
+import be.com.server.chat.repository.ChatRoomRepository
 import be.com.server.chat.service.dto.ChatMessageDto
 import be.com.server.chat.service.dto.ChatRoomCreateDto
-import be.com.server.chat.service.dto.ChatRoomDto
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class ChatService(
-    private val chatRepository: ChatRepository
+    private val chatMessageRepository: ChatMessageRepository,
+    private val chatRoomRepository: ChatRoomRepository
 ) {
-    // ChatRoom DB 에 저장 ... ?!
-    private val chatRooms: MutableMap<String, ChatRoomDto> = ConcurrentHashMap()
-
-    fun createChatRoom(chatRoomCreateDto: ChatRoomCreateDto): ChatRoomDto {
-        return ChatRoomDto(
-            sender = chatRoomCreateDto.userName
-        ).apply { chatRooms[this.roomId] = this }
+    fun createChatRoom(chatRoomCreateDto: ChatRoomCreateDto): ChatRoom {
+        return chatRoomRepository.save(
+            ChatRoom(
+                customerId = chatRoomCreateDto.userName
+            )
+        )
     }
 
-    // UserType 에 따라 Chatting Room 반환 하기 !
-    fun getAllChatRooms(): List<ChatRoomDto> {
-        return chatRooms.values.toList()
+    fun getChatRooms(): List<ChatRoom> = chatRoomRepository.findAll()
+
+    fun findChatRoomByIdOrThrow(chatRoomId: String): ChatRoom {
+        return chatRoomRepository.findById(chatRoomId).orElseThrow {
+            IllegalArgumentException("ChatRoom not found with id: $chatRoomId")
+        }
     }
 
-    fun findByIdOrThrow(chatRoomId: String): ChatRoomDto {
-        return chatRooms[chatRoomId]
-            ?: throw IllegalArgumentException("ChatRoom not found: $chatRoomId")
+    fun findChatRoomMessagesBy(chatRoomId: String, userTypes: Set<String>): List<ChatMessage> {
+        return chatMessageRepository.findByChatRoomIdAndSenderTypeIn(chatRoomId, userTypes)
     }
 
     fun saveChatMessage(chatMessageDto: ChatMessageDto): ChatMessage {
-        return chatRepository.save(
+        return chatMessageRepository.save(
             ChatMessage(
                 chatRoomId = chatMessageDto.chatRoomId,
                 content = chatMessageDto.content,
                 senderId = chatMessageDto.senderId,
-                senderType = chatMessageDto.senderType
+                senderType = chatMessageDto.senderType,
+                channelType = chatMessageDto.channelType
             )
         )
+    }
+
+    fun findChatRoomMessageByRoomId(roomId: String): List<ChatMessage> {
+        return chatMessageRepository.findByChatRoomId(chatRoomId = roomId)
     }
 
     companion object {

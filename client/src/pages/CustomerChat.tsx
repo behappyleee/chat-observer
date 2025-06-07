@@ -68,7 +68,7 @@ const CustomerChat = () => {
         <Paper elevation={3} sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
             상담을 시작하기 전에 이름을 입력해주세요
-          </Typography>
+              </Typography>
           
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <TextField
@@ -87,7 +87,7 @@ const CustomerChat = () => {
               {isConnecting ? '연결 중...' : '상담 시작하기'}
             </Button>
           </Box>
-        </Paper>
+      </Paper>
       </Box>
     </Container>
   );

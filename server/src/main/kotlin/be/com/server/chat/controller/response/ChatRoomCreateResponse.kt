@@ -1,5 +1,6 @@
 package be.com.server.chat.controller.response
 
+import be.com.server.chat.domain.ChatRoom
 import be.com.server.chat.service.dto.ChatRoomDto
 import be.com.server.common.type.Authority
 
@@ -21,4 +22,14 @@ fun ChatRoomDto.toChatRoomResponse(userType: String): ChatRoomResponse =
         lastMessage = "TODO LAST MESSAGE",
         hasObserverMessage = false,
         createdAt = java.time.LocalDateTime.now()
+    )
+
+fun ChatRoom.toChatRoomResponse(userType: String): ChatRoomResponse =
+    ChatRoomResponse(
+        id = this.id,
+        customerName = this.customerId,
+        userType = userType,
+        lastMessage = "",
+        hasObserverMessage = false,
+        createdAt = this.createdAt
     )

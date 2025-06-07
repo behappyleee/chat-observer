@@ -24,6 +24,10 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Client } from '@stomp/stompjs';
 import { UserType } from '../types/chat';
 import { useWebSocket } from '../hooks/useWebSocket';
+import axios from 'axios';
+
+// axios 기본 설정
+axios.defaults.baseURL = 'http://localhost:8083';
 
 interface Message {
   id: string;
@@ -31,6 +35,7 @@ interface Message {
   senderType: UserType;
   message: string;
   createdAt: string;
+  channelType?: string;
 }
 
 interface TabPanelProps {
@@ -76,28 +81,91 @@ const ChatRoom = () => {
   };
 
   useEffect(() => {
+    if (roomId) {
+      // 채팅방 입장 시 이전 메시지 가져오기
+      const fetchMessages = async () => {
+        try {
+          let url = `/chats/rooms/${roomId}`;
+          
+          // 탭에 따라 다른 userType으로 필터링
+          if (isObserverRoom) {
+            // Observer 상담 탭일 때는 AGENT와 OBSERVER의 메시지만
+            url += '?userType=AGENT&userType=OBSERVER';
+          } else {
+            // 고객 상담 탭일 때는 CUSTOMER와 AGENT의 메시지만
+            url += '?userType=CUSTOMER&userType=AGENT';
+          }
+
+          const response = await axios.get(url);
+          const messages = response.data.map((msg: any) => ({
+            id: msg.id,
+            sender: msg.senderId,
+            senderType: msg.senderType,
+            message: msg.message,
+            createdAt: msg.createdAt,
+            channelType: msg.channelType
+          }));
+          // 시간순으로 정렬 (오래된 순)
+          messages.sort((a: Message, b: Message) => 
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+          setMessages(messages);
+        } catch (error) {
+          console.error('Failed to fetch messages:', error);
+        }
+      };
+
+      fetchMessages();
+    }
+  }, [roomId, isObserverRoom]);
+
+  useEffect(() => {
     if (isConnected && roomId) {
       console.log('Subscribing to messages for room:', roomId);
       
-      const subscription = subscribe(`/chat/${roomId}`, (message) => {
+      // Observer 채팅방일 때는 다른 topic으로 구독
+      const topic = isObserverRoom ? `/chat/${roomId}/observer` : `/chat/${roomId}`;
+      console.log('Subscribing to topic:', topic);
+      
+      const subscription = subscribe(topic, (message) => {
         console.log('Raw message received:', message);
-        const newMessage = message as Message;
-        console.log('Parsed message:', newMessage);
-        
-        setMessages(prev => {
-          const isDuplicate = prev.some(msg => 
-            msg.message === newMessage.message && 
-            msg.createdAt === newMessage.createdAt
-          );
+        try {
+          // 메시지가 문자열로 오는 경우를 처리
+          const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message;
+          console.log('Parsed message:', parsedMessage);
           
-          if (isDuplicate) {
-            console.log('Duplicate message, skipping');
-            return prev;
-          }
+          const newMessage: Message = {
+            id: parsedMessage.id || String(Date.now()),
+            sender: parsedMessage.userName || parsedMessage.sender,
+            senderType: parsedMessage.userType || parsedMessage.senderType,
+            message: parsedMessage.message,
+            createdAt: parsedMessage.createdAt || new Date().toISOString(),
+            channelType: parsedMessage.channelType
+          };
           
-          console.log('Adding new message:', newMessage);
-          return [...prev, newMessage];
-        });
+          console.log('Processed new message:', newMessage);
+          
+          setMessages(prev => {
+            const isDuplicate = prev.some(msg => 
+              msg.message === newMessage.message && 
+              msg.createdAt === newMessage.createdAt
+            );
+            
+            if (isDuplicate) {
+              console.log('Duplicate message, skipping');
+              return prev;
+            }
+            
+            console.log('Adding new message to state');
+            // 새 메시지를 추가하고 시간순으로 정렬
+            const updatedMessages = [...prev, newMessage].sort((a, b) => 
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            );
+            return updatedMessages;
+          });
+        } catch (error) {
+          console.error('Error processing message:', error);
+        }
       });
 
       subscriptionRef.current = subscription;
@@ -109,7 +177,7 @@ const ChatRoom = () => {
         }
       };
     }
-  }, [isConnected, roomId, subscribe]);
+  }, [isConnected, roomId, isObserverRoom, subscribe]);
 
   useEffect(() => {
     scrollToBottom();
@@ -167,13 +235,18 @@ const ChatRoom = () => {
     if (newMessage.trim() && isConnected) {
       const message = {
         roomId: roomId,
-        userType: currentUserType,
         userName: userName,
+        userType: currentUserType,
         message: newMessage.trim(),
         createdAt: new Date().toISOString(),
+        channelType: isObserverRoom ? 'OBSERVER' : 'CUSTOMER' // 채널 타입 추가
       };
 
-      sendMessage(`/chats/${roomId}/message`, message);
+      console.log('Sending message:', message);
+      const topic = isObserverRoom ? `/chats/${roomId}/observer/message` : `/chats/${roomId}/message`;
+      console.log('Sending to topic:', topic);
+      
+      sendMessage(topic, message);
       setNewMessage('');
     }
   };
@@ -234,73 +307,60 @@ const ChatRoom = () => {
   };
 
   const renderMessage = (message: Message) => {
+    // Observer일 때는 모든 메시지를 표시
     if (currentUserType === 'OBSERVER') {
-      return renderMessageForObserver(message);
-    }
+      const messageStyle = {
+        display: 'flex',
+        flexDirection: 'column',
+        mb: 2,
+        p: 2,
+        borderRadius: 2,
+        maxWidth: '70%',
+        ...(message.senderType === 'CUSTOMER'
+          ? {
+              backgroundColor: '#e3f2fd',
+              marginLeft: '0',
+              marginRight: 'auto',
+              border: '1px solid #1976d2',
+            }
+          : message.senderType === 'AGENT'
+          ? {
+              backgroundColor: '#e8f5e9',
+              marginLeft: 'auto',
+              marginRight: '0',
+              border: '1px solid #4caf50',
+            }
+          : message.senderType === 'OBSERVER'
+          ? {
+              backgroundColor: '#fff3e0',
+              marginLeft: '0',
+              marginRight: 'auto',
+              border: '1px solid #ffb74d',
+            }
+          : {
+              backgroundColor: '#f5f5f5',
+              marginLeft: '0',
+              marginRight: 'auto',
+            }),
+      };
 
-    if (currentUserType === 'CUSTOMER' && message.senderType === 'OBSERVER') {
-      return null;
-    }
-
-    return renderMessageForAgent(message);
-  };
-
-  const renderMessageForObserver = (message: Message) => {
-    console.log('Rendering message:', message);
-    
-    const messageStyle = {
-      display: 'flex',
-      flexDirection: 'column',
-      mb: 2,
-      p: 2,
-      borderRadius: 2,
-      maxWidth: '70%',
-      ...(message.senderType === 'CUSTOMER'
-        ? {
-            backgroundColor: '#e3f2fd',
-            marginLeft: 'auto',
-            marginRight: '0',
-          }
-        : message.senderType === 'AGENT'
-        ? {
-            backgroundColor: '#e8f5e9',
-            marginLeft: '0',
-            marginRight: 'auto',
-            border: '1px solid #4caf50',
-          }
-        : message.senderType === 'OBSERVER'
-        ? {
-            backgroundColor: '#fff3e0',
-            marginLeft: '0',
-            marginRight: 'auto',
-            border: '1px solid #ffb74d',
-          }
-        : {
-            backgroundColor: '#f5f5f5',
-            marginLeft: '0',
-            marginRight: 'auto',
-          }),
-    };
-
-    return (
-      <Box sx={messageStyle}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          {getSenderIcon(message.senderType)}
-          <Typography variant="subtitle2" sx={{ ml: 1 }}>
-            {message.sender}
+      return (
+        <Box sx={messageStyle}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            {getSenderIcon(message.senderType)}
+            <Typography variant="subtitle2" sx={{ ml: 1 }}>
+              {message.sender}
+            </Typography>
+          </Box>
+          <Typography>{message.message}</Typography>
+          <Typography variant="caption" color="textSecondary" sx={{ mt: 1 }}>
+            {new Date(message.createdAt).toLocaleTimeString()}
           </Typography>
         </Box>
-        <Typography>{message.message}</Typography>
-        <Typography variant="caption" color="textSecondary" sx={{ mt: 1 }}>
-          {new Date(message.createdAt).toLocaleTimeString()}
-        </Typography>
-      </Box>
-    );
-  };
+      );
+    }
 
-  const renderMessageForAgent = (message: Message) => {
-    console.log('Rendering message:', message);
-    
+    // 일반 사용자(고객/상담가)일 때는 기존 로직 유지
     const messageStyle = {
       display: 'flex',
       flexDirection: 'column',
@@ -311,14 +371,15 @@ const ChatRoom = () => {
       ...(message.senderType === 'CUSTOMER'
         ? {
             backgroundColor: '#e3f2fd',
-            marginLeft: 'auto',
-            marginRight: '0',
+            marginLeft: '0',
+            marginRight: 'auto',
+            border: '1px solid #1976d2',
           }
         : message.senderType === 'AGENT'
         ? {
             backgroundColor: '#e8f5e9',
-            marginLeft: '0',
-            marginRight: 'auto',
+            marginLeft: 'auto',
+            marginRight: '0',
             border: '1px solid #4caf50',
           }
         : message.senderType === 'OBSERVER'
@@ -367,13 +428,13 @@ const ChatRoom = () => {
   };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    if (currentUserType === 'AGENT') {
+    if (currentUserType === 'AGENT' || currentUserType === 'OBSERVER') {
       if (newValue === 1) {
         // Observer 상담 탭 클릭 시 Observer 전용 채팅방으로 이동
         const observerRoomId = `${roomId}`;
         navigate(`/chat/${observerRoomId}`, { 
           state: { 
-            userType: 'OBSERVER',
+            userType: currentUserType,
             fromAgent: true,
             originalRoomId: roomId,
             isObserverRoom: true
@@ -384,7 +445,7 @@ const ChatRoom = () => {
         const originalRoomId = location.state?.originalRoomId || roomId;
         navigate(`/chat/${originalRoomId}`, { 
           state: { 
-            userType: 'AGENT',
+            userType: currentUserType,
             fromObserver: true
           } 
         });
@@ -394,7 +455,7 @@ const ChatRoom = () => {
 
   return (
     <Container maxWidth="md" sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {currentUserType === 'AGENT' && (
+      {(currentUserType === 'AGENT' || currentUserType === 'OBSERVER') && (
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
           <Tabs 
             value={isObserverRoom ? 1 : 0} 
@@ -457,4 +518,4 @@ const ChatRoom = () => {
   );
 };
 
-export default ChatRoom; 
+export default ChatRoom;

@@ -7,17 +7,18 @@ import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 
 @Component
-class ChatMessageEventHandler(
+class ChatEventHandler(
     private val chatService: ChatService
 ) {
     @Async
     @EventListener
-    fun handleChatMessageHandler(chatMessageSaveEvent: ChatMessageSaveEvent) {
+    fun handleChatMessageSave(chatMessageSaveEvent: ChatMessageEvent.ChatMessageSaveEvent) {
         chatService.saveChatMessage(
             chatMessageDto = ChatMessageDto(
                 chatRoomId = chatMessageSaveEvent.chatRoomId,
                 senderId = chatMessageSaveEvent.senderId,
                 senderType = chatMessageSaveEvent.senderType,
+                channelType = chatMessageSaveEvent.channelType,
                 content = chatMessageSaveEvent.content
             )
         )

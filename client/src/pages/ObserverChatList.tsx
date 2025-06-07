@@ -9,9 +9,12 @@ import {
   ListItemButton,
   Divider,
   Box,
+  Avatar,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import PersonIcon from '@mui/icons-material/Person';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 
 interface ChatRoom {
   id: string;
@@ -29,7 +32,11 @@ const ObserverChatList = () => {
     // 채팅방 목록 가져오기
     const fetchChatRooms = async () => {
       try {
-        const response = await axios.get('/api/chats/observer');
+        const response = await axios.get('/chats', {
+          params: {
+            userType: 'OBSERVER'
+          }
+        });        
         setChatRooms(response.data);
       } catch (error) {
         console.error('Failed to fetch chat rooms:', error);
@@ -52,7 +59,7 @@ const ObserverChatList = () => {
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Paper elevation={3} sx={{ p: 3 }}>
         <Typography variant="h5" component="h1" gutterBottom>
-          Observer 채팅방 목록
+          채팅방 목록
         </Typography>
         <Divider sx={{ mb: 2 }} />
         <List>
@@ -60,19 +67,24 @@ const ObserverChatList = () => {
             <React.Fragment key={room.id}>
               <ListItem disablePadding>
                 <ListItemButton onClick={() => handleChatRoomClick(room.id)}>
-                  <ListItemText
-                    primary={
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                      <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
+                        <PersonIcon />
+                      </Avatar>
+                      <Box>
                         <Typography variant="subtitle1">
                           {room.customerName} - {room.agentName}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {new Date(room.createdAt).toLocaleDateString()}
+                        <Typography variant="body2" color="text.secondary">
+                          {room.lastMessage || '새로운 대화가 시작되었습니다.'}
                         </Typography>
                       </Box>
-                    }
-                    secondary={room.lastMessage || '새로운 대화가 시작되었습니다.'}
-                  />
+                    </Box>
+                    <Typography variant="caption" color="text.secondary">
+                      {new Date(room.createdAt).toLocaleDateString()}
+                    </Typography>
+                  </Box>
                 </ListItemButton>
               </ListItem>
               <Divider />
