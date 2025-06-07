@@ -21,11 +21,11 @@ const Main = () => {
   };
 
   const handleAgentChat = () => {
-    navigate('/chat-list', { state: { userType: 'AGENT' } });
+    navigate('/signin', { state: { userType: 'AGENT' } });
   };
 
   const handleObserverChat = () => {
-    navigate('/observer-chat', { state: { userType: 'OBSERVER' } });
+    navigate('/observer-signin');
   };
 
   return (

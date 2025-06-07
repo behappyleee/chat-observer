@@ -20,7 +20,7 @@ import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Client } from '@stomp/stompjs';
 import { UserType } from '../types/chat';
 import { useWebSocket } from '../hooks/useWebSocket';
@@ -58,15 +58,18 @@ function TabPanel(props: TabPanelProps) {
 const ChatRoom = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const location = useLocation();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [currentUserType, setCurrentUserType] = useState<UserType>(
     location.state?.userType || 'CUSTOMER'
   );
   const [userName, setUserName] = useState<string>('');
+  const [activeTab, setActiveTab] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { sendMessage, subscribe, isConnected } = useWebSocket();
   const subscriptionRef = useRef<any>(null);
+  const isObserverRoom = location.state?.isObserverRoom;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -148,7 +151,7 @@ const ChatRoom = () => {
   }, [roomId]);
 
   const canSendMessage = () => {
-    return currentUserType === 'CUSTOMER' || currentUserType === 'AGENT';
+    return currentUserType === 'CUSTOMER' || currentUserType === 'AGENT' || currentUserType === 'OBSERVER';
   };
 
   const canViewAllMessages = () => {
@@ -363,8 +366,54 @@ const ChatRoom = () => {
     }
   };
 
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    if (currentUserType === 'AGENT') {
+      if (newValue === 1) {
+        // Observer 상담 탭 클릭 시 Observer 전용 채팅방으로 이동
+        const observerRoomId = `${roomId}`;
+        navigate(`/chat/${observerRoomId}`, { 
+          state: { 
+            userType: 'OBSERVER',
+            fromAgent: true,
+            originalRoomId: roomId,
+            isObserverRoom: true
+          } 
+        });
+      } else {
+        // 고객 상담 탭 클릭 시 원래 채팅방으로 이동
+        const originalRoomId = location.state?.originalRoomId || roomId;
+        navigate(`/chat/${originalRoomId}`, { 
+          state: { 
+            userType: 'AGENT',
+            fromObserver: true
+          } 
+        });
+      }
+    }
+  };
+
   return (
     <Container maxWidth="md" sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {currentUserType === 'AGENT' && (
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+          <Tabs 
+            value={isObserverRoom ? 1 : 0} 
+            onChange={handleTabChange}
+            sx={{
+              '& .MuiTab-root': {
+                color: 'text.secondary',
+                '&.Mui-selected': {
+                  color: isObserverRoom ? 'warning.main' : 'primary.main',
+                },
+              },
+            }}
+          >
+            <Tab label="고객 상담" />
+            <Tab label="Observer 상담" />
+          </Tabs>
+        </Box>
+      )}
+
       <Paper
         elevation={3}
         sx={{
@@ -374,6 +423,7 @@ const ChatRoom = () => {
           display: 'flex',
           flexDirection: 'column',
           mb: 2,
+          bgcolor: isObserverRoom ? '#fff3e0' : 'background.paper',
         }}
       >
         {messages.map((message, index) => (
@@ -387,7 +437,7 @@ const ChatRoom = () => {
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="메시지를 입력하세요..."
+            placeholder={isObserverRoom ? "Observer에게 메시지를 입력하세요..." : "메시지를 입력하세요..."}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}

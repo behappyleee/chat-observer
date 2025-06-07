@@ -15,9 +15,12 @@ class ChatRestController(
     private val chatService: ChatService
 ) {
     // 전체 채팅방을 조회
+    // TODO : Client 에서 userType 에 따라 데이터 받기 !!
     @GetMapping("/chats")
-    fun getAllChatRooms(): List<ChatRoomResponse> {
-        return chatService.getAllChatRooms().map { it.toChatRoomResponse(userType = Authority.ROLE_AGENT.typeCode) }
+    fun getAllChatRooms(
+        @RequestParam(name = "userType", required = true) userType: String,
+    ): List<ChatRoomResponse> {
+        return chatService.getAllChatRooms().map { it.toChatRoomResponse(userType = userType) }
     }
 
     // 특정 채널을 조회
@@ -30,6 +33,7 @@ class ChatRestController(
         return chatService.findByIdOrThrow(chatRoomId = chatId).toChatRoomResponse(userType = userType)
     }
 
+    // 저장 된 메세지 들을 조회 !
     companion object {
         private val logger = LoggerFactory.getLogger(ChatRestController::class.java)
     }

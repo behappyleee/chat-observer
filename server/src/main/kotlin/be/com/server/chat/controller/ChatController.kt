@@ -17,6 +17,7 @@ import org.springframework.stereotype.Controller
 class ChatController(
     private val chatService: ChatService
 ) {
+    // 메세지 저장이 필요할 듯 ... ?!
     @MessageMapping("/chats/create")
     @SendTo("/topic/chat/init")
     fun createChatRoom(chatRoomCreateRequest: ChatRoomCreateRequest): ChatRoomResponse =
@@ -29,6 +30,20 @@ class ChatController(
     @MessageMapping("/chats/{roomId}/message")
     @SendTo("/topic/chat/{roomId}")
     fun sendMessage(
+        @DestinationVariable("roomId") roomId: String,
+        message: ChatRoomCreateDto
+    ): ChatResponse {
+        return ChatResponse(
+            id = message.roomId,
+            sender = message.userName,
+            senderType = message.userType,
+            message = message.message
+        )
+    }
+
+    @MessageMapping("/chats/{roomId}/observer/message")
+    @SendTo("/topic/chat/{roomId}/observer")
+    fun sendObserverMessage(
         @DestinationVariable("roomId") roomId: String,
         message: ChatRoomCreateDto
     ): ChatResponse {

@@ -8,30 +8,23 @@ import {
   Paper,
   Avatar
 } from '@mui/material';
-import { useNavigate, useLocation } from 'react-router-dom';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import { useNavigate } from 'react-router-dom';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
-const Signin = () => {
+const ObserverSignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const location = useLocation();
-  const userType = location.state?.userType || 'CUSTOMER';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement signin logic
-    navigate('/chat-list', { 
+    // TODO: Implement observer signin logic
+    navigate('/observer-chat-list', { 
       state: { 
-        userType: 'AGENT',
-        userName: 'TEST_COUNTER' // 실제로는 로그인한 상담사 이름을 사용
+        userType: 'OBSERVER',
+        userName: 'TEST_OBSERVER' // 실제로는 로그인한 Observer 이름을 사용
       } 
     });
-  };
-
-  const signupNavigate = () => {
-    navigate('/signup');
   };
 
   return (
@@ -54,11 +47,11 @@ const Signin = () => {
             width: '100%',
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: userType === 'AGENT' ? 'success.main' : 'primary.main' }}>
-            {userType === 'AGENT' ? <SupportAgentIcon /> : <LockOutlinedIcon />}
+          <Avatar sx={{ m: 1, bgcolor: 'warning.main' }}>
+            <VisibilityIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            {userType === 'AGENT' ? '상담사 로그인' : '로그인'}
+            Observer 로그인
           </Typography>
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
             <TextField
@@ -89,27 +82,10 @@ const Signin = () => {
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ 
-                mt: 3, 
-                mb: 2,
-                bgcolor: userType === 'AGENT' ? 'success.main' : 'primary.main',
-                '&:hover': {
-                  bgcolor: userType === 'AGENT' ? 'success.dark' : 'primary.dark'
-                }
-              }}
+              sx={{ mt: 3, mb: 2, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' } }}
             >
               로그인
             </Button>
-            {userType !== 'AGENT' && (
-              <Button
-                onClick={signupNavigate}
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-              >
-                회원가입
-              </Button>
-            )}
           </Box>
         </Paper>
       </Box>
@@ -117,4 +93,4 @@ const Signin = () => {
   );
 };
 
-export default Signin; 
+export default ObserverSignIn; 

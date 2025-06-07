@@ -16,6 +16,7 @@ class ChatService {
         ).apply { chatRooms[this.roomId] = this }
     }
 
+    // UserType 에 따라 Chatting Room 반환 하기 !
     fun getAllChatRooms(): List<ChatRoomDto> {
         return chatRooms.values.toList()
     }
