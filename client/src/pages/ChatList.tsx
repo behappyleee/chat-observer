@@ -59,7 +59,7 @@ const ChatList = () => {
           userName: 'TEST_COUNTER', // 실제로는 로그인한 상담사 정보를 사용
         }
       })
-      navigate(`/chat/${chatId}`);
+      navigate(`/chat/${chatId}`, { state: { userType: 'AGENT' } });
     } catch (error) {
       console.error('채팅방 입장에 실패했습니다:', error);
       alert('채팅방 입장에 실패했습니다. 다시 시도해주세요.');

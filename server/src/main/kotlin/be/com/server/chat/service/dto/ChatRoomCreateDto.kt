@@ -9,3 +9,9 @@ data class ChatRoomCreateDto(
     val message: String,
     val createdAt: LocalDateTime = LocalDateTime.now()
 )
+
+//sendMessage('/chats/create', {
+//    userType: 'CUSTOMER',
+//    userName: customerName.trim(),
+//    initialMessage: '안녕하세요, 상담이 필요합니다.',
+//});

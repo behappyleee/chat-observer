@@ -18,6 +18,7 @@ class UserController(
     private val userService: UserService
 ) {
 
+    // 회원 가입 !
     @PostMapping("/signup")
     fun signup(
         @RequestBody signupRequest: UserSignupRequest
@@ -25,11 +26,13 @@ class UserController(
         userService.signup(userSignupDto = signupRequest.toUserSignupDto())
     }
 
+    // 로그인 !
     @PostMapping("/signin")
     fun signin() {
         userService.signin()
     }
 
+    // 현재 세션 정보 조회 !
     @GetMapping("/me")
     fun getUser(): UserInfoResponse {
         // TODO - User 세션 정보 넘겨주기 !

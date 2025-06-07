@@ -82,7 +82,12 @@ const ChatRoom = () => {
         console.log('Parsed message:', newMessage);
         
         setMessages(prev => {
-          if (prev.some(msg => msg.id === newMessage.id)) {
+          const isDuplicate = prev.some(msg => 
+            msg.message === newMessage.message && 
+            msg.createdAt === newMessage.createdAt
+          );
+          
+          if (isDuplicate) {
             console.log('Duplicate message, skipping');
             return prev;
           }
@@ -159,8 +164,8 @@ const ChatRoom = () => {
     if (newMessage.trim() && isConnected) {
       const message = {
         roomId: roomId,
-        senderType: currentUserType,
-        sender: userName,
+        userType: currentUserType,
+        userName: userName,
         message: newMessage.trim(),
         createdAt: new Date().toISOString(),
       };
