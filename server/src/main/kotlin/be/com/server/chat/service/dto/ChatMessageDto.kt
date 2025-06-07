@@ -4,5 +4,5 @@ data class ChatMessageDto(
     val chatRoomId: String,
     val senderId: String,
     val senderType: String,
-    val content: String,
+    val content: String
 )

@@ -6,4 +6,3 @@ data class ChatMessageSaveEvent(
     val senderType: String,
     val content: String
 )
-

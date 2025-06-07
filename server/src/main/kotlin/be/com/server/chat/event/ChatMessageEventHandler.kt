@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class ChatMessageEventHandler(
-    private val chatService: ChatService,
+    private val chatService: ChatService
 ) {
     @Async
     @EventListener
@@ -18,7 +18,7 @@ class ChatMessageEventHandler(
                 chatRoomId = chatMessageSaveEvent.chatRoomId,
                 senderId = chatMessageSaveEvent.senderId,
                 senderType = chatMessageSaveEvent.senderType,
-                content = chatMessageSaveEvent.content,
+                content = chatMessageSaveEvent.content
             )
         )
     }

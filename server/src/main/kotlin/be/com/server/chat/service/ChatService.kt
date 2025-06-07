@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class ChatService(
-    private val chatRepository: ChatRepository,
+    private val chatRepository: ChatRepository
 ) {
     // ChatRoom DB 에 저장 ... ?!
     private val chatRooms: MutableMap<String, ChatRoomDto> = ConcurrentHashMap()
@@ -38,7 +38,7 @@ class ChatService(
                 chatRoomId = chatMessageDto.chatRoomId,
                 content = chatMessageDto.content,
                 senderId = chatMessageDto.senderId,
-                senderType = chatMessageDto.senderType,
+                senderType = chatMessageDto.senderType
             )
         )
     }
