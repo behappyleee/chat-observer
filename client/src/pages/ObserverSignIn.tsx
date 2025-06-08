@@ -10,21 +10,48 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import axios from 'axios';
 
 const ObserverSignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement observer signin logic
-    navigate('/observer-chat-list', { 
-      state: { 
-        userType: 'OBSERVER',
-        userName: 'TEST_OBSERVER' // 실제로는 로그인한 Observer 이름을 사용
-      } 
-    });
+    try {
+      console.log('Attempting observer login with:', { email, password });
+      
+      const response = await axios.post('http://localhost:8083/api/v1/members/signin', {
+        email,
+        password
+      });
+
+      console.log('Login response:', response.data);
+      const { token } = response.data;
+      
+      // 토큰을 localStorage에 저장
+      localStorage.setItem('token', token);
+      localStorage.setItem('userType', 'OBSERVER');
+      
+      // axios 기본 설정에 토큰 추가
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      navigate('/observer-chat-list', { 
+        state: { 
+          userType: 'OBSERVER',
+          userName: email.split('@')[0] // 이메일에서 사용자 이름 추출
+        } 
+      });
+    } catch (error) {
+      console.error('Login failed:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Error details:', error.response?.data);
+        alert(`로그인에 실패했습니다: ${error.response?.data?.message || '알 수 없는 오류가 발생했습니다.'}`);
+      } else {
+        alert('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
+      }
+    }
   };
 
   return (
@@ -82,7 +109,14 @@ const ObserverSignIn = () => {
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' } }}
+              sx={{ 
+                mt: 3, 
+                mb: 2,
+                bgcolor: 'warning.main',
+                '&:hover': {
+                  bgcolor: 'warning.dark'
+                }
+              }}
             >
               로그인
             </Button>

@@ -1,0 +1,55 @@
+package be.com.server.member.controller
+
+import be.com.server.common.ApiEndpointVersion
+import be.com.server.member.controller.request.MemberSigninRequest
+import be.com.server.member.controller.request.MemberSignupRequest
+import be.com.server.member.controller.request.toUserSignupDto
+import be.com.server.member.controller.response.MemberInfoResponse
+import be.com.server.member.controller.response.TokenResponse
+import be.com.server.member.service.MemberService
+import be.com.server.member.service.dto.MemberSigninDto
+import org.slf4j.LoggerFactory
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+
+@RestController
+@RequestMapping("${ApiEndpointVersion.V1_API_PREFIX}/members")
+class MemberController(
+    private val memberService: MemberService
+) {
+    // 회원 가입 !
+    @PostMapping("/signup")
+    fun signup(
+        @RequestBody signupRequest: MemberSignupRequest
+    ) {
+        memberService.signup(memberSignupDto = signupRequest.toUserSignupDto())
+    }
+
+    @PostMapping("/signin")
+    fun signin(
+        @RequestBody memberSigninRequest: MemberSigninRequest
+    ): TokenResponse {
+        return memberService.signin(
+            memberSigninDto = MemberSigninDto(
+                email = memberSigninRequest.email,
+                password = memberSigninRequest.password
+            )
+        ).let { TokenResponse(token = it) }
+    }
+
+    // 현재 세션 정보 조회 !
+    @GetMapping("/me")
+    fun getUser(): MemberInfoResponse {
+        // TODO - User 세션 정보 넘겨주기 !
+        return MemberInfoResponse(
+            email = "TEST-EMAIL"
+        )
+    }
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(MemberController::class.java)
+    }
+}
