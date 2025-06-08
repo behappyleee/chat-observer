@@ -17,7 +17,7 @@ const ChatRooms = () => {
   useEffect(() => {
     const fetchChatRooms = async () => {
       try {
-        const response = await axios.get('/chats/rooms');
+        const response = await axios.get('/api/v1/chats/rooms');
         setChatRooms(response.data);
       } catch (error) {
         console.error('Failed to fetch chat rooms:', error);

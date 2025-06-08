@@ -42,7 +42,7 @@ const ChatList = () => {
   useEffect(() => {
     const fetchChatRooms = async () => {
       try {
-        const response = await axios.get('http://localhost:8083/chats', {
+        const response = await axios.get('http://localhost:8083/api/v1/chats', {
           params: {
             userType: userType
           }
@@ -59,7 +59,7 @@ const ChatList = () => {
   const handleChatClick = async (chatId: string) => {
     try {
       // 채팅방 정보 가져오기
-      await axios.get(`http://localhost:8083/chats/${chatId}`, {
+      await axios.get(`http://localhost:8083/api/v1/chats/${chatId}`, {
         params: {
           userType: userType,
           userName: userName

@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material';
 import Main from './pages/Main';
-import Signin from './pages/Signin';
+import Signin from './pages/SignIn';
 import Signup from './pages/Signup';
 import ChatList from './pages/ChatList';
 import ChatRoom from './pages/ChatRoom';

@@ -86,7 +86,7 @@ const ChatRoom = () => {
       // 채팅방 입장 시 이전 메시지 가져오기
       const fetchMessages = async () => {
         try {
-          let url = `/chats/rooms/${roomId}`;
+          let url = `/api/v1/chats/rooms/${roomId}`;
           
           // 탭에 따라 다른 userType과 channelType으로 필터링
           if (isObserverRoom) {
@@ -134,7 +134,7 @@ const ChatRoom = () => {
               
               if (shouldDelete) {
                 try {
-                  await axios.delete(`/chats/rooms/${roomId}`);
+                  await axios.delete(`/api/v1/chats/rooms/${roomId}`);
                   console.log('대화 내용 폐기 완료');
                   setMessages([]); // 메시지 목록 초기화
                 } catch (error) {

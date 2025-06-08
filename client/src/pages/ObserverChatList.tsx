@@ -32,7 +32,7 @@ const ObserverChatList = () => {
     // 채팅방 목록 가져오기
     const fetchChatRooms = async () => {
       try {
-        const response = await axios.get('/chats', {
+        const response = await axios.get('/api/v1/chats', {
           params: {
             userType: 'OBSERVER'
           }
