@@ -7,6 +7,7 @@ import be.com.server.member.controller.response.MemberInfoResponse
 import be.com.server.member.controller.response.TokenResponse
 import be.com.server.member.service.MemberService
 import be.com.server.member.service.dto.MemberSigninDto
+import io.swagger.v3.oas.annotations.Operation
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -20,6 +21,7 @@ class MemberController(
     private val memberService: MemberService
 ) {
     @PostMapping("/signin")
+    @Operation(summary = "로그인 API", description = "로그인 API")
     fun signin(
         @RequestBody memberSigninRequest: MemberSigninRequest
     ): TokenResponse {
@@ -32,6 +34,7 @@ class MemberController(
     }
 
     @PostMapping("/guest")
+    @Operation(summary = "고객 비 로그인 토큰 발급 API", description = "비회원 토큰 발급 API")
     fun issueGuestToken(
         @RequestBody guestTokenRequest: GuestTokenRequest
     ): TokenResponse {
