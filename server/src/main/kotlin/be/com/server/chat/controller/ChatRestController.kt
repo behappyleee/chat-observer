@@ -27,7 +27,7 @@ class ChatRestController(
     fun getChatRoomById(
         @PathVariable("id") chatId: String,
         @RequestParam(value = "userType", required = true) userType: String,
-        @RequestParam(value = "userName", required = true) userName: String,
+        @RequestParam(value = "userName", required = true) userName: String
     ): ChatRoomResponse {
         return chatService.findChatRoomByIdOrThrow(chatRoomId = chatId).toChatRoomResponse(userType = userType)
     }
@@ -36,7 +36,7 @@ class ChatRestController(
     fun getChatRoomMessagesById(
         @PathVariable("id") chatId: String,
         @RequestParam(value = "userType", required = true) userType: Set<String>,
-        @RequestParam(value = "channelType", required = true) channelType: String,
+        @RequestParam(value = "channelType", required = true) channelType: String
     ): List<ChatMessageResponse> {
         return chatService.findChatRoomMessagesBy(chatRoomId = chatId, userTypes = userType, channelType = channelType).toChatMessageResponse()
     }
@@ -44,11 +44,11 @@ class ChatRestController(
     @DeleteMapping("/chats/rooms/{roomId}")
     fun deleteChatRoomObserverMessagesById(
         @PathVariable("roomId") roomId: String,
-        @RequestParam(value = "channelType", required = true) channelType: String = "OBSERVER",
+        @RequestParam(value = "channelType", required = true) channelType: String = "OBSERVER"
     ) {
         chatService.deleteChatRoomMessageBy(
             roomId = roomId,
-            channelType = channelType,
+            channelType = channelType
         )
     }
 

@@ -85,7 +85,7 @@ class ChatController(
     @MessageMapping("/chats/{roomId}/customer/exit")
     @SendTo("/topic/chat/{roomId}/customer/exit")
     fun exitCustomer(
-        @DestinationVariable("roomId") roomId: String,
+        @DestinationVariable("roomId") roomId: String
     ): CustomerChatExitResponse {
         return CustomerChatExitResponse(roomId = roomId)
     }
