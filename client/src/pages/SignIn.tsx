@@ -8,30 +8,51 @@ import {
   Paper,
   Avatar
 } from '@mui/material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import axios from 'axios';
 
-const Signin = () => {
+const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const location = useLocation();
-  const userType = location.state?.userType || 'CUSTOMER';
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement signin logic
-    navigate('/chat-list', { 
-      state: { 
-        userType: 'AGENT',
-        userName: 'TEST_COUNTER' // 실제로는 로그인한 상담사 이름을 사용
-      } 
-    });
-  };
+    try {
+      console.log('Attempting agent login with:', { email, password });
+      
+      const response = await axios.post('http://localhost:8083/api/v1/members/signin', {
+        email,
+        password
+      });
 
-  const signupNavigate = () => {
-    navigate('/signup');
+      console.log('Login response:', response.data);
+      const { token } = response.data;
+      
+      // 토큰을 localStorage에 저장
+      localStorage.setItem('token', token);
+      localStorage.setItem('userType', 'AGENT');
+      
+      // axios 기본 설정에 토큰 추가
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      navigate('/chat-list', { 
+        state: { 
+          userType: 'AGENT',
+          userName: email.split('@')[0] // 이메일에서 사용자 이름 추출
+        } 
+      });
+    } catch (error) {
+      console.error('Login failed:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Error details:', error.response?.data);
+        alert(`로그인에 실패했습니다: ${error.response?.data?.message || '알 수 없는 오류가 발생했습니다.'}`);
+      } else {
+        alert('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
+      }
+    }
   };
 
   return (
@@ -54,11 +75,11 @@ const Signin = () => {
             width: '100%',
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: userType === 'AGENT' ? 'success.main' : 'primary.main' }}>
-            {userType === 'AGENT' ? <SupportAgentIcon /> : <LockOutlinedIcon />}
+          <Avatar sx={{ m: 1, bgcolor: 'success.main' }}>
+            <SupportAgentIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            {userType === 'AGENT' ? '상담사 로그인' : '로그인'}
+            상담사 로그인
           </Typography>
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
             <TextField
@@ -92,24 +113,14 @@ const Signin = () => {
               sx={{ 
                 mt: 3, 
                 mb: 2,
-                bgcolor: userType === 'AGENT' ? 'success.main' : 'primary.main',
+                bgcolor: 'success.main',
                 '&:hover': {
-                  bgcolor: userType === 'AGENT' ? 'success.dark' : 'primary.dark'
+                  bgcolor: 'success.dark'
                 }
               }}
             >
               로그인
             </Button>
-            {userType !== 'AGENT' && (
-              <Button
-                onClick={signupNavigate}
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-              >
-                회원가입
-              </Button>
-            )}
           </Box>
         </Paper>
       </Box>
@@ -117,4 +128,4 @@ const Signin = () => {
   );
 };
 
-export default Signin; 
+export default SignIn; 

@@ -15,4 +15,5 @@ server:
 logging:
   level:
     root: debug
-
+jwt:
+  secret: dGhpc2lzYXZlcnlzZWN1cmVqd3RzZWNyZXRrZXkzMnN5bWJvbHM=

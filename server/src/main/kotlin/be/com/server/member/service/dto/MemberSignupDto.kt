@@ -1,6 +1,6 @@
-package be.com.server.user.service.dto
+package be.com.server.member.service.dto
 
-data class UserSignupDto(
+data class MemberSignupDto(
     val nickName: String,
     val email: String,
     val password: String

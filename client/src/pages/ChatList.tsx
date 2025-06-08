@@ -105,11 +105,11 @@ const ChatList = () => {
                       </Box>
                     }
                     secondary={
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                        <Typography variant="body2" color="text.secondary">
+                      <Box component="div" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        <Typography component="div" variant="body2" color="text.secondary">
                           {room.lastMessage}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography component="div" variant="caption" color="text.secondary">
                           {room.lastMessageTime}
                         </Typography>
                       </Box>
