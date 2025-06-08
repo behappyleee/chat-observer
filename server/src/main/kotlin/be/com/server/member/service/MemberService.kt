@@ -28,7 +28,7 @@ class MemberService(
     fun createGuestToken(guestName: String): String {
         return jwtTokenProvider.createToken(
             email = guestName,
-            roles = listOf(Authority.ROLE_CUSTOMER.name),
+            roles = listOf(Authority.ROLE_CUSTOMER.name)
         )
     }
 }

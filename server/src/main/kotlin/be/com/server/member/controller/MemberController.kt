@@ -33,11 +33,11 @@ class MemberController(
 
     @PostMapping("/guest")
     fun issueGuestToken(
-        @RequestBody guestTokenRequest: GuestTokenRequest,
+        @RequestBody guestTokenRequest: GuestTokenRequest
     ): TokenResponse {
-       val token = memberService.createGuestToken(
-           guestName = guestTokenRequest.name,
-       )
+        val token = memberService.createGuestToken(
+            guestName = guestTokenRequest.name
+        )
         return TokenResponse(token = token)
     }
 
