@@ -36,6 +36,20 @@ https://www.youtube.com/watch?v=pUnar-1xMh8
 
 ---
 
+### 실행 방법
+1. git clone
+- git@github.com:behappyleee/chat-observer.git
+
+2. server 모듈 실행
+- cd server
+- ./gradlew clean build --refresh-dependencies
+- java -jar -Dspring.profiles.active=local build/libs/server-0.0.1-SNAPSHOT.jar
+ 
+3. client 모듈 실행
+- cd client
+- yarn build
+- yarn start
+
 ### AI 의존도
 - client - Cursor 이용하여 코드 작성 (90% Cursor 가 코드 작성)
 - server - Chatgpt 도움 받음 (50% 정도 Chatgpt 코드 작성)
