@@ -1,93 +1,55 @@
 package be.com.server.chat.controller
 
-import be.com.server.chat.controller.request.ChatMessageSendRequest
-import be.com.server.chat.controller.request.ChatRoomCreateRequest
-import be.com.server.chat.controller.response.ChatResponse
+import be.com.server.chat.controller.response.ChatMessageResponse
 import be.com.server.chat.controller.response.ChatRoomResponse
-import be.com.server.chat.controller.response.CustomerChatExitResponse
+import be.com.server.chat.controller.response.toChatMessageResponse
 import be.com.server.chat.controller.response.toChatRoomResponse
-import be.com.server.chat.event.ChatMessageEvent
 import be.com.server.chat.service.ChatService
-import be.com.server.chat.service.dto.ChatRoomCreateDto
 import org.slf4j.LoggerFactory
-import org.springframework.context.ApplicationEventPublisher
-import org.springframework.messaging.handler.annotation.DestinationVariable
-import org.springframework.messaging.handler.annotation.MessageMapping
-import org.springframework.messaging.handler.annotation.SendTo
-import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 
-@Controller
+@RestController
 class ChatController(
-    private val chatService: ChatService,
-    private val eventPublisher: ApplicationEventPublisher
+    private val chatService: ChatService
 ) {
-    @MessageMapping("/chats/create")
-    @SendTo("/topic/chat/init")
-    fun createChatRoom(chatRoomCreateRequest: ChatRoomCreateRequest): ChatRoomResponse {
-        return chatService.createChatRoom(
-            chatRoomCreateDto = ChatRoomCreateDto(
-                userName = chatRoomCreateRequest.userName,
-                userType = chatRoomCreateRequest.userType,
-                message = chatRoomCreateRequest.initialMessage
-            )
-        ).toChatRoomResponse(userType = chatRoomCreateRequest.userType)
+    @GetMapping("/chats")
+    fun getAllChatRooms(
+        @RequestParam(name = "userType", required = true) userType: String
+    ): List<ChatRoomResponse> {
+        return chatService.getChatRooms().map { it.toChatRoomResponse(userType = userType) }
     }
 
-    @MessageMapping("/chats/{roomId}/message")
-    @SendTo("/topic/chat/{roomId}")
-    fun sendMessage(
-        @DestinationVariable("roomId") roomId: String,
-        message: ChatMessageSendRequest
-    ): ChatResponse {
-        eventPublisher.publishEvent(
-            ChatMessageEvent.ChatMessageSaveEvent(
-                chatRoomId = roomId,
-                // TODO - SenderID 변경 하기 !!
-                senderId = message.userName,
-                senderType = message.userType,
-                channelType = message.channelType,
-                content = message.message
-            )
-        )
-
-        return ChatResponse(
-            id = roomId,
-            sender = message.userName,
-            senderType = message.userType,
-            message = message.message
-        )
+    @GetMapping("/chats/{id}")
+    fun getChatRoomById(
+        @PathVariable("id") chatId: String,
+        @RequestParam(value = "userType", required = true) userType: String,
+        @RequestParam(value = "userName", required = true) userName: String
+    ): ChatRoomResponse {
+        return chatService.findChatRoomByIdOrThrow(chatRoomId = chatId).toChatRoomResponse(userType = userType)
     }
 
-    @MessageMapping("/chats/{roomId}/observer/message")
-    @SendTo("/topic/chat/{roomId}/observer")
-    fun sendObserverMessage(
-        @DestinationVariable("roomId") roomId: String,
-        message: ChatMessageSendRequest
-    ): ChatResponse {
-        eventPublisher.publishEvent(
-            ChatMessageEvent.ChatMessageSaveEvent(
-                chatRoomId = roomId,
-                senderId = message.userName,
-                senderType = message.userType,
-                channelType = message.channelType,
-                content = message.message
-            )
-        )
-
-        return ChatResponse(
-            id = roomId,
-            sender = message.userName,
-            senderType = message.userType,
-            message = message.message
-        )
+    @GetMapping("/chats/rooms/{id}")
+    fun getChatRoomMessagesById(
+        @PathVariable("id") chatId: String,
+        @RequestParam(value = "userType", required = true) userType: Set<String>,
+        @RequestParam(value = "channelType", required = true) channelType: String
+    ): List<ChatMessageResponse> {
+        return chatService.findChatRoomMessagesBy(chatRoomId = chatId, userTypes = userType, channelType = channelType).toChatMessageResponse()
     }
 
-    @MessageMapping("/chats/{roomId}/customer/exit")
-    @SendTo("/topic/chat/{roomId}/customer/exit")
-    fun exitCustomer(
-        @DestinationVariable("roomId") roomId: String
-    ): CustomerChatExitResponse {
-        return CustomerChatExitResponse(roomId = roomId)
+    @DeleteMapping("/chats/rooms/{roomId}")
+    fun deleteChatRoomObserverMessagesById(
+        @PathVariable("roomId") roomId: String,
+        @RequestParam(value = "channelType", required = true) channelType: String = "OBSERVER"
+    ) {
+        chatService.deleteChatRoomMessageBy(
+            roomId = roomId,
+            channelType = channelType
+        )
     }
 
     companion object {
