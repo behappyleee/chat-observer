@@ -12,7 +12,9 @@ class JwtAuthenticationFilter(
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
-        request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        chain: FilterChain
     ) {
         val token = resolveToken(request)
         if (token != null && jwtTokenProvider.validateToken(token)) {
