@@ -34,10 +34,13 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
                 it
+                    .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**")
+                    .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/v1/members/signin").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/v1/members/guest").permitAll()
                     .requestMatchers("/ws/**", "/topic/**").permitAll()
-                    .anyRequest().authenticated()
+                    .anyRequest()
+                    .authenticated()
             }
 
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter::class.java)
