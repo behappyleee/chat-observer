@@ -1,9 +1,8 @@
 package be.com.server.member.controller
 
 import be.com.server.common.ApiEndpointVersion
+import be.com.server.member.controller.request.GuestTokenRequest
 import be.com.server.member.controller.request.MemberSigninRequest
-import be.com.server.member.controller.request.MemberSignupRequest
-import be.com.server.member.controller.request.toUserSignupDto
 import be.com.server.member.controller.response.MemberInfoResponse
 import be.com.server.member.controller.response.TokenResponse
 import be.com.server.member.service.MemberService
@@ -20,14 +19,6 @@ import org.springframework.web.bind.annotation.RestController
 class MemberController(
     private val memberService: MemberService
 ) {
-    // 회원 가입 !
-    @PostMapping("/signup")
-    fun signup(
-        @RequestBody signupRequest: MemberSignupRequest
-    ) {
-        memberService.signup(memberSignupDto = signupRequest.toUserSignupDto())
-    }
-
     @PostMapping("/signin")
     fun signin(
         @RequestBody memberSigninRequest: MemberSigninRequest
@@ -38,6 +29,16 @@ class MemberController(
                 password = memberSigninRequest.password
             )
         ).let { TokenResponse(token = it) }
+    }
+
+    @PostMapping("/guest")
+    fun issueGuestToken(
+        @RequestBody guestTokenRequest: GuestTokenRequest,
+    ): TokenResponse {
+       val token = memberService.createGuestToken(
+           guestName = guestTokenRequest.name,
+       )
+        return TokenResponse(token = token)
     }
 
     // 현재 세션 정보 조회 !

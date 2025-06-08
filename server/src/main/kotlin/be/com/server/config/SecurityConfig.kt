@@ -30,12 +30,13 @@ class SecurityConfig(
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .cors { corsConfigurationSource() }
-            .csrf { it.disable() } // 👉 CSRF 비활성화
-            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) } // 👉 세션 사용 안 함
+            .csrf { it.disable() }
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
                 it
                     .requestMatchers(HttpMethod.POST, "/api/v1/members/signin").permitAll()
-                    .requestMatchers("/ws/**", "/topic/**").permitAll() // 👉 WebSocket 엔드포인트 허용
+                    .requestMatchers(HttpMethod.POST, "/api/v1/members/guest").permitAll()
+                    .requestMatchers("/ws/**", "/topic/**").permitAll()
                     .anyRequest().authenticated()
             }
 

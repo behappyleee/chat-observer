@@ -7,6 +7,7 @@ interface WebSocketHook {
   subscribe: (destination: string, callback: (message: any) => void) => void;
   disconnect: () => void;
   isConnected: boolean;
+  connect: () => Promise<void>;
 }
 
 export const useWebSocket = (): WebSocketHook => {
@@ -68,8 +69,45 @@ export const useWebSocket = (): WebSocketHook => {
     };
   }, []);
 
+  const connect = useCallback(async () => {
+    if (stompClient.current) {
+      return;
+    }
+
+    const newClient = new Client({
+      brokerURL: 'ws://localhost:8083/ws',
+      connectHeaders: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      },
+      onConnect: () => {
+        console.log('Connected to WebSocket');
+        setIsConnected(true);
+      },
+      onDisconnect: () => {
+        console.log('Disconnected from WebSocket');
+        setIsConnected(false);
+      },
+      onStompError: (frame) => {
+        console.error('STOMP error:', frame);
+      }
+    });
+
+    try {
+      await newClient.activate();
+      stompClient.current = newClient;
+    } catch (error) {
+      console.error('Failed to connect to WebSocket:', error);
+      throw error;
+    }
+  }, []);
+
   const sendMessage = useCallback((destination: string, body: any) => {
-    if (stompClient.current?.connected) {
+    if (!stompClient.current || !isConnected) {
+      console.error('WebSocket is not connected');
+      return;
+    }
+
+    try {
       console.log('Sending message to:', destination, body);
       stompClient.current.publish({
         destination: `/pub${destination}`,
@@ -78,10 +116,10 @@ export const useWebSocket = (): WebSocketHook => {
           'content-type': 'application/json'
         }
       });
-    } else {
-      console.error('WebSocket is not connected');
+    } catch (error) {
+      console.error('Failed to send message:', error);
     }
-  }, []);
+  }, [isConnected]);
 
   const subscribe = useCallback((destination: string, callback: (message: any) => void) => {
     console.log('Subscribing to:', destination);
@@ -115,5 +153,11 @@ export const useWebSocket = (): WebSocketHook => {
     }
   }, []);
 
-  return { sendMessage, subscribe, disconnect, isConnected };
+  return {
+    sendMessage,
+    subscribe,
+    disconnect,
+    isConnected,
+    connect
+  };
 }; 
