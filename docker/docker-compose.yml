@@ -14,8 +14,6 @@ services:
       - VITE_API_URL=http://localhost:8083
     depends_on:
       - server
-    networks:
-      - chat-network
 
   server:
     build:
@@ -27,11 +25,9 @@ services:
       - SPRING_PROFILES_ACTIVE=local
       - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/chat?useSSL=false&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_DATASOURCE_PASSWORD=1234
     depends_on:
       - db
-    networks:
-      - chat-network
 
   db:
     image: mysql:8.0
@@ -42,12 +38,6 @@ services:
       - MYSQL_ROOT_PASSWORD=password
     volumes:
       - mysql-data:/var/lib/mysql
-    networks:
-      - chat-network
-
-networks:
-  chat-network:
-    driver: bridge
 
 volumes:
   mysql-data: 
