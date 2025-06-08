@@ -18,7 +18,7 @@ class ChatService(
     fun createChatRoom(chatRoomCreateDto: ChatRoomCreateDto): ChatRoom {
         return chatRoomRepository.save(
             ChatRoom(
-                customerId = chatRoomCreateDto.userName
+                memberId = chatRoomCreateDto.userName
             )
         )
     }

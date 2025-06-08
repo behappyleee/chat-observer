@@ -27,7 +27,7 @@ fun ChatRoomDto.toChatRoomResponse(userType: String): ChatRoomResponse =
 fun ChatRoom.toChatRoomResponse(userType: String): ChatRoomResponse =
     ChatRoomResponse(
         id = this.id,
-        customerName = this.customerId,
+        customerName = this.memberId,
         userType = userType,
         lastMessage = "",
         hasObserverMessage = false,
