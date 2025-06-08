@@ -41,6 +41,10 @@ https://www.youtube.com/watch?v=pUnar-1xMh8
 - git@github.com:behappyleee/chat-observer.git
 
 2. server 모듈 실행
+- 서버 실행 시 Local mysql 8 버전이 필요 합니다.
+- chat 데이터 베이스 생성 (CREATE DATABASE chat) 도 필요 합니다.
+- 필요 schema.sql, data.sql 은 server/src/main/resources 디렉토리에 작성하였습니다.
+(docker 로 실행 방법 첨부하지 못한 점 죄송합니다 !)
 - cd server
 - ./gradlew clean build --refresh-dependencies
 - java -jar -Dspring.profiles.active=local build/libs/server-0.0.1-SNAPSHOT.jar
